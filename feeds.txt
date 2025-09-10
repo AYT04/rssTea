@@ -1,4 +1,10 @@
 https://crtc.gc.ca/eng/rss/daily.xml
+https://www.cbc.ca/webfeed/rss/rss-politics
+https://www.cbc.ca/webfeed/rss/rss-technology
+https://www.cbc.ca/webfeed/rss/rss-Indigenous
+https://www.cbc.ca/webfeed/rss/rss-canada-kitchenerwaterloo
+https://www.cbc.ca/webfeed/rss/rss-canada-newfoundland
+https://www.cbc.ca/webfeed/rss/rss-canada-windsor
 https://odysee.com/$/rss/@BrodieRobertson:5
 https://odysee.com/$/rss/@AlphaNerd:8
 https://odysee.com/$/rss/@seytonic:c
