@@ -7,7 +7,7 @@ on:
       - 'feeds.php'
       - 'base.html'
   schedule:
-    - cron: '0 */24 * * *'  # Runs every 2 hours
+    - cron: '0 */24 * * *'  # Runs every 24 hours
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -69,3 +69,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4  # Updated to v4
+      
+      - name: Send notification email
+        if: success()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "✅ Feed Update Completed - ${{ github.repository }}"
+          body: |
+            The feed has been successfully updated and deployed to GitHub Pages.
+            
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Deployment URL: ${{ steps.deployment.outputs.page_url }}
+            Time: ${{ github.event.head_commit.timestamp }}
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: ${{ secrets.EMAIL_FROM }}
