@@ -1,5 +1,5 @@
 <!DOCTYPE html><html><head>
-    <title>rssTea - RSS Reader Web App Hosted On Github</title>
+    <title>AYT04 - RSS Reader</title>
     <meta name="description" content="rssTea is a fast, lightweight RSS and podcast Web Viewer that can be hosted On Github Pages."/>
     <link rel="shortcut icon" href="favicon.ico"> 
   <link rel="icon" href="favicon.png">
@@ -14,25 +14,19 @@
 <body>
 <div id="header">AYT04</div>
     <div id="pcwrap">
-<div id="filter"><div class="pclogo">rssTea</div><span id="filters">
+<div id="filter"><div class="pclogo">ayt04</div><span id="filters">
 <select name="changechannel"><!-- options here --></select></span></div>
 <div id="wrap">
 <!-- posts here -->
-</div>
-    </div>
-<div id="floating_player">
-<div class="player_meta"><button id="playpausebutton">Play</button><span id="title">Not Playing</span> <button id="speed">1x</button><button id="plus30">+30s</button></div>
-  <div id="timeline_wrap">
-  <ul id="chapters"></ul>
-    <span id="current_time"></span>
-    <span id="timeline">
-<input type="range" id="seekbar" min="0" max="100" step="0.1">
-</span>
-    <span id="duration"></span>
-  </div>
-</div>
 
 <script>
+    // I'll plan on studying this later,
+    // not that i don't wanna risk breaking
+    // this, i just want to take some time to adjust and learn
+    // some JS/PHP. I think most of this could be removed as,
+    // I am stripping out audio and podcasting for, since my
+    //feeds aren't podcasts, or more traditionally on youtube,
+    //odysee & PeerTube.
 const tabs = document.querySelectorAll('.tab');
 const posts = document.querySelectorAll('.post');
 const select = document.querySelector('select[name="changechannel"]');
@@ -151,21 +145,21 @@ document.addEventListener('DOMContentLoaded', function ()
         fsb.value = progress;
     }
 
-    function playTime()
-    {
-        navigator.mediaSession.playbackState = 'playing';
-        fpBtn.classList.toggle('playing');
-        ppBtn.classList.toggle('playing');
-        updatePositionState();
-    }
+    // function playTime()
+    // {
+    //     navigator.mediaSession.playbackState = 'playing';
+    //     fpBtn.classList.toggle('playing');
+    //     ppBtn.classList.toggle('playing');
+    //     updatePositionState();
+    // }
 
-    function pauseTime()
-    {
-        navigator.mediaSession.playbackState = 'paused';
-        fpBtn.classList.toggle('playing');
-        ppBtn.classList.toggle('playing');
-        updatePositionState();
-    }
+    // function pauseTime()
+    // {
+    //     navigator.mediaSession.playbackState = 'paused';
+    //     fpBtn.classList.toggle('playing');
+    //     ppBtn.classList.toggle('playing');
+    //     updatePositionState();
+    // }
 
 
     function formatTime(time)
@@ -175,64 +169,64 @@ document.addEventListener('DOMContentLoaded', function ()
         return ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
     }
 
-    btns.forEach(function (btn)
-    {
-        btn.addEventListener('click', function ()
-        {
-            const aid = this.getAttribute('data-aid');
-            const audioElem = document.querySelector('audio[aid="' + aid + '"]');
-            changePlayback(audioElem);
-        });
-    });
+    // btns.forEach(function (btn)
+    // {
+    //     btn.addEventListener('click', function ()
+    //     {
+    //         const aid = this.getAttribute('data-aid');
+    //         const audioElem = document.querySelector('audio[aid="' + aid + '"]');
+    //         changePlayback(audioElem);
+    //     });
+    // });
 
-    function changePlayback(audioElem)
-    {
-        const prevPPBtn = ppBtn;
-        ppBtn = document.querySelector('[data-aid="' + audioElem.getAttribute('aid') + '"]');
-        const src = audioElem.getAttribute('src');
+    // function changePlayback(audioElem)
+    // {
+    //     const prevPPBtn = ppBtn;
+    //     ppBtn = document.querySelector('[data-aid="' + audioElem.getAttribute('aid') + '"]');
+    //     const src = audioElem.getAttribute('src');
 
-        if (caudio && caudio !== audioElem)
-        {
-            caudio.pause();
-            caudio.removeEventListener('timeupdate', updateAudioTime);
-            caudio.removeEventListener('play', playTime);
-            caudio.removeEventListener('pause', pauseTime);
+    //     if (caudio && caudio !== audioElem)
+    //     {
+    //         caudio.pause();
+    //         caudio.removeEventListener('timeupdate', updateAudioTime);
+    //         caudio.removeEventListener('play', playTime);
+    //         caudio.removeEventListener('pause', pauseTime);
 
-            prevPPBtn.classList.remove('playing');
-            fpBtn.classList.remove('playing');
-            fsb.value = '0';
+    //         prevPPBtn.classList.remove('playing');
+    //         fpBtn.classList.remove('playing');
+    //         fsb.value = '0';
 
-            if (audioElem.readyState >= 1)
-            {
-                startPlayback(audioElem);
-            }
-            else
-            {
-                audioElem.addEventListener('loadedmetadata', function ()
-                {
-                    startPlayback(audioElem);
-                });
-            }
-        }
-        else if (caudio)
-        {
-            togglePP();
-        }
-        else
-        {
-            if (audioElem.readyState >= 1)
-            {
-                startPlayback(audioElem);
-            }
-            else
-            {
-                audioElem.addEventListener('loadedmetadata', function ()
-                {
-                    startPlayback(audioElem);
-                });
-            }
-        }
-    }
+    //         if (audioElem.readyState >= 1)
+    //         {
+    //             startPlayback(audioElem);
+    //         }
+    //         else
+    //         {
+    //             audioElem.addEventListener('loadedmetadata', function ()
+    //             {
+    //                 startPlayback(audioElem);
+    //             });
+    //         }
+    //     }
+    //     else if (caudio)
+    //     {
+    //         togglePP();
+    //     }
+    //     else
+    //     {
+    //         if (audioElem.readyState >= 1)
+    //         {
+    //             startPlayback(audioElem);
+    //         }
+    //         else
+    //         {
+    //             audioElem.addEventListener('loadedmetadata', function ()
+    //             {
+    //                 startPlayback(audioElem);
+    //             });
+    //         }
+    //     }
+    // }
 
     function updatePositionState()
     {
@@ -244,117 +238,117 @@ document.addEventListener('DOMContentLoaded', function ()
         });
     }
 
-    function startPlayback(audioElem)
-    {
+    // function startPlayback(audioElem)
+    // {
 
-        const fp = document.querySelector('#floating_player');
-        const closestPost = audioElem.closest('.post');
-        document.querySelectorAll('.post.nowplaying').forEach(e => e.classList.remove('nowplaying'));
-        closestPost.classList.add('nowplaying');
-        const h2text = closestPost.querySelector('h2').textContent;
-        document.getElementById('title').innerHTML = h2text;
-        caudio = audioElem;
-        caudio.addEventListener('timeupdate', updateAudioTime);
-        caudio.addEventListener('play', playTime);
-        caudio.addEventListener('pause', pauseTime);
-        const audioDur = caudio.duration;
-        const formattedDur = formatTime(audioDur);
-        document.getElementById('duration').textContent = formattedDur;
-        fp.style.display = 'block';
-        setTimeout(function ()
-        {
-            fp.classList.add("show");
-        }, 10);
-        caudio.play();
+    //     const fp = document.querySelector('#floating_player');
+    //     const closestPost = audioElem.closest('.post');
+    //     document.querySelectorAll('.post.nowplaying').forEach(e => e.classList.remove('nowplaying'));
+    //     closestPost.classList.add('nowplaying');
+    //     const h2text = closestPost.querySelector('h2').textContent;
+    //     document.getElementById('title').innerHTML = h2text;
+    //     caudio = audioElem;
+    //     caudio.addEventListener('timeupdate', updateAudioTime);
+    //     caudio.addEventListener('play', playTime);
+    //     caudio.addEventListener('pause', pauseTime);
+    //     const audioDur = caudio.duration;
+    //     const formattedDur = formatTime(audioDur);
+    //     document.getElementById('duration').textContent = formattedDur;
+    //     fp.style.display = 'block';
+    //     setTimeout(function ()
+    //     {
+    //         fp.classList.add("show");
+    //     }, 10);
+    //     caudio.play();
 
-        document.getElementById('speed').innerText = caudio.playbackRate + 'x';
-        const mediaAlbumArt = 'https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=' + encodeURIComponent(closestPost.querySelector('img').src) + '&container=ig';
-        navigator.mediaSession.metadata = new MediaMetadata(
-        {
-            title: h2text,
-            artist: closestPost.querySelector('.channel').textContent,
-            album: "rssTea",
-            artwork: [
-        //    {
-        //        src: mediaAlbumArt + '&resize_w=128&resize_h=128',
-        //        sizes: "128x128",
-        //        type: "image/png",
-        //    },
-        //    {
-        //        src: mediaAlbumArt + '&resize_w=96&resize_h=96',
-        //        sizes: "96x96",
-        //        type: "image/png",
-        //    },
-        //    {
-        //        src: mediaAlbumArt + '&resize_w=192&resize_h=192',
-        //        sizes: "192x192",
-        //        type: "image/png",
-        //    },
-            {
-                src: closestPost.querySelector('img').src,
-            }, ],
-        });
-
-
-        const totalAids = document.querySelectorAll('[data-aid]').length;
-        let nextAid = Math.floor(audioElem.getAttribute('aid')) + 1;
-        let prevAid = Math.floor(audioElem.getAttribute('aid')) - 1;
-        if (nextAid > totalAids - 1)
-        {
-            nextAid = 0;
-        }
-        if (prevAid < 0)
-        {
-            prevAid = totalAids - 1;
-        }
-
-        navigator.mediaSession.setActionHandler("play", () =>
-        {
-            caudio.play();
-        });
-        navigator.mediaSession.setActionHandler("pause", () =>
-        {
-            caudio.pause();
-        });
-        // navigator.mediaSession.setActionHandler("seekto", (details) => {
-        //     console.log(details);
-        //  if (details.fastSeek && caudio) {
-        // const newTime = details.seekTime || 0;
-        // caudio.currentTime = newTime;
-        //  } else if (caudio) {
-        // const currentTime = caudio.currentTime || 0;
-        //  const seekTime = details.seekTime || 0;
-        //  caudio.currentTime = currentTime + seekTime;
-        //  }
-        //});
+    //     document.getElementById('speed').innerText = caudio.playbackRate + 'x';
+    //     const mediaAlbumArt = 'https://images1-focus-opensocial.googleusercontent.com/gadgets/proxy?url=' + encodeURIComponent(closestPost.querySelector('img').src) + '&container=ig';
+    //     navigator.mediaSession.metadata = new MediaMetadata(
+    //     {
+    //         title: h2text,
+    //         artist: closestPost.querySelector('.channel').textContent,
+    //         album: "rssTea",
+    //         artwork: [
+    //     //    {
+    //     //        src: mediaAlbumArt + '&resize_w=128&resize_h=128',
+    //     //        sizes: "128x128",
+    //     //        type: "image/png",
+    //     //    },
+    //     //    {
+    //     //        src: mediaAlbumArt + '&resize_w=96&resize_h=96',
+    //     //        sizes: "96x96",
+    //     //        type: "image/png",
+    //     //    },
+    //     //    {
+    //     //        src: mediaAlbumArt + '&resize_w=192&resize_h=192',
+    //     //        sizes: "192x192",
+    //     //        type: "image/png",
+    //     //    },
+    //         {
+    //             src: closestPost.querySelector('img').src,
+    //         }, ],
+    //     });
 
 
-        navigator.mediaSession.setActionHandler(
-            'nexttrack',
-            () =>
-            {
-                changePlayback(document.querySelector("[aid=\"" + nextAid + "\"]"));
-            }
-        );
-        navigator.mediaSession.setActionHandler(
-            'previoustrack',
-            () =>
-            {
-                changePlayback(document.querySelector("[aid=\"" + prevAid + "\"]"));
-            }
-        );
-        navigator.mediaSession.setActionHandler('seekbackward', (details) =>
-        {
-            caudio.currentTime = caudio.currentTime - (details.seekOffset || 10);
-            updatePositionState();
-        });
-        navigator.mediaSession.setActionHandler('seekforward', (details) =>
-        {
-            caudio.currentTime = caudio.currentTime + (details.seekOffset || 10);
-            updatePositionState();
-        });
+    //     const totalAids = document.querySelectorAll('[data-aid]').length;
+    //     let nextAid = Math.floor(audioElem.getAttribute('aid')) + 1;
+    //     let prevAid = Math.floor(audioElem.getAttribute('aid')) - 1;
+    //     if (nextAid > totalAids - 1)
+    //     {
+    //         nextAid = 0;
+    //     }
+    //     if (prevAid < 0)
+    //     {
+    //         prevAid = totalAids - 1;
+    //     }
 
-    }
+    //     navigator.mediaSession.setActionHandler("play", () =>
+    //     {
+    //         caudio.play();
+    //     });
+    //     navigator.mediaSession.setActionHandler("pause", () =>
+    //     {
+    //         caudio.pause();
+    //     });
+    //     // navigator.mediaSession.setActionHandler("seekto", (details) => {
+    //     //     console.log(details);
+    //     //  if (details.fastSeek && caudio) {
+    //     // const newTime = details.seekTime || 0;
+    //     // caudio.currentTime = newTime;
+    //     //  } else if (caudio) {
+    //     // const currentTime = caudio.currentTime || 0;
+    //     //  const seekTime = details.seekTime || 0;
+    //     //  caudio.currentTime = currentTime + seekTime;
+    //     //  }
+    //     //});
+
+
+    //     navigator.mediaSession.setActionHandler(
+    //         'nexttrack',
+    //         () =>
+    //         {
+    //             changePlayback(document.querySelector("[aid=\"" + nextAid + "\"]"));
+    //         }
+    //     );
+    //     navigator.mediaSession.setActionHandler(
+    //         'previoustrack',
+    //         () =>
+    //         {
+    //             changePlayback(document.querySelector("[aid=\"" + prevAid + "\"]"));
+    //         }
+    //     );
+    //     navigator.mediaSession.setActionHandler('seekbackward', (details) =>
+    //     {
+    //         caudio.currentTime = caudio.currentTime - (details.seekOffset || 10);
+    //         updatePositionState();
+    //     });
+    //     navigator.mediaSession.setActionHandler('seekforward', (details) =>
+    //     {
+    //         caudio.currentTime = caudio.currentTime + (details.seekOffset || 10);
+    //         updatePositionState();
+    //     });
+
+    // }
 
 
 });
