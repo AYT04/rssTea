@@ -1,33 +1,20 @@
 name: Fetch new feeds and push content to Github Pages
+
 on:
-  # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
     paths:
       - 'feeds.php'
       - 'base.html'
   schedule:
-    - cron: '0 */24 * * *'  # Runs every 2 hours
-  # Allows you to run this workflow manually from the Actions tab
+    - cron: '0 */24 * * *'  # Note: This cron syntax runs every 24 hours, not 2 hours. Use '0 */2 * * *' for every 2 hours.
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN
 permissions:
-  id-token: write
   contents: write
-  actions: write
-  checks: write
-  deployments: write
-  discussions: write
-  issues: write
   pages: write
-  packages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
+  id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -40,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v4
       
       - name: Setup Pages
-        uses: actions/configure-pages@v4  # Updated to v4
+        uses: actions/configure-pages@v4
       
       - name: Run feeds.php
         run: php feeds.php
@@ -62,10 +49,31 @@ jobs:
           force: true
       
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3  # Updated to v3
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './public'
       
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4  # Updated to v4
+        uses: actions/deploy-pages@v4
+
+      # --- NEW STEP: Send Email Notification ---
+      - name: Send Email Notification
+        #if: always() # Sends email even if the deployment fails. Remove this line to only send on success.
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.GMAIL_USERNAME }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: GitHub Pages Feed Update - ${{ job.status }}
+          body: |
+            The feed update workflow has completed.
+            
+            Status: ${{ job.status }}
+            Repository: ${{ github.repository }}
+            Run ID: ${{ github.run_id }}
+            URL: ${{ steps.deployment.outputs.page_url }}
+          to: ${{ secrets.GMAIL_RECIPIENT }}
+          from: GitHub Actions Bot
+
