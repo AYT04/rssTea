@@ -78,7 +78,7 @@ echo "Detected {$newItemCount} brand-new feed updates. Generating Discord Embed 
 
 // Gather context for customizable branding properties
 $repo = getenv('GITHUB_REPOSITORY') ?: 'avadhesh18/rssTea';
-$faviconUrl = "https://raw.githubusercontent.com/{$repo}/main/public/favicon.png";
+$faviconUrl = "https://avatars.githubusercontent.com/u/153463910?v=4";
 
 // Discord allows up to 10 rich embeds per webhook request
 $chunkedItems = array_chunk($newItems, 10);
@@ -141,7 +141,7 @@ foreach ($chunkedItems as $chunk) {
     
     // Package JSON request payload
     $payload = json_encode([
-        'username' => 'rssTea Updates',
+        'username' => 'AYT04',
         'avatar_url' => $faviconUrl,
         'embeds' => $embeds
     ]);
