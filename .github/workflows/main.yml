@@ -57,23 +57,23 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # --- NEW STEP: Send Email Notification ---
-      - name: Send Email Notification
-        #if: always() # Sends email even if the deployment fails. Remove this line to only send on success.
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.GMAIL_USERNAME }}
-          password: ${{ secrets.GMAIL_APP_PASSWORD }}
-          subject: GitHub Pages Feed Update - ${{ job.status }}
-          body: |
-            The feed update workflow has completed.
+      # # --- NEW STEP: Send Email Notification ---
+      # - name: Send Email Notification
+      #   #if: always() # Sends email even if the deployment fails. Remove this line to only send on success.
+      #   uses: dawidd6/action-send-mail@v3
+      #   with:
+      #     server_address: smtp.gmail.com
+      #     server_port: 465
+      #     username: ${{ secrets.GMAIL_USERNAME }}
+      #     password: ${{ secrets.GMAIL_APP_PASSWORD }}
+      #     subject: GitHub Pages Feed Update - ${{ job.status }}
+      #     body: |
+      #       The feed update workflow has completed.
             
-            Status: ${{ job.status }}
-            Repository: ${{ github.repository }}
-            Run ID: ${{ github.run_id }}
-            URL: ${{ steps.deployment.outputs.page_url }}
-          to: ${{ secrets.GMAIL_RECIPIENT }}
-          from: GitHub Actions Bot
+      #       Status: ${{ job.status }}
+      #       Repository: ${{ github.repository }}
+      #       Run ID: ${{ github.run_id }}
+      #       URL: ${{ steps.deployment.outputs.page_url }}
+      #     to: ${{ secrets.GMAIL_RECIPIENT }}
+      #     from: GitHub Actions Bot
 
