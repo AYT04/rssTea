@@ -7,7 +7,7 @@ on:
       - 'feeds.php'
       - 'base.html'
   schedule:
-    - cron: '0 */24 * * *'  # Note: This cron syntax runs every 24 hours, not 2 hours. Use '0 */2 * * *' for every 2 hours.
+    - cron: '0 */2 * * *'  # Runs every 2 hours to keep your feeds fresh!
   workflow_dispatch:
 
 permissions:
@@ -31,16 +31,38 @@ jobs:
       
       - name: Setup Pages
         uses: actions/configure-pages@v4
+
+      - name: Preserve old feed.json for change detection
+        run: |
+          if [ -f feed.json ]; then
+            cp feed.json old_feed.json
+            echo "Successfully preserved old feed.json."
+          else
+            echo "[]" > old_feed.json
+            echo "No existing feed.json found; created a clean baseline."
+          fi
       
       - name: Run feeds.php
         run: php feeds.php
+
+      - name: Send Discord notifications for new items
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK repository secret is not configured. Skipping notifications."
+          else
+            php notify_discord.php
+          fi
       
       - name: Commit files
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
+          # Clean up the comparison cache so it is not committed to git
+          rm -f old_feed.json
           git add --all
-          git commit -m "Updating the repository" || echo "No changes to commit"
+          git commit -m "Updating the repository with fresh feeds" || echo "No changes to commit"
       
       - name: Push changes
         uses: ad-m/github-push-action@master
@@ -57,23 +79,13 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
 
-      # # --- NEW STEP: Send Email Notification ---
-      # - name: Send Email Notification
-      #   #if: always() # Sends email even if the deployment fails. Remove this line to only send on success.
-      #   uses: dawidd6/action-send-mail@v3
-      #   with:
-      #     server_address: smtp.gmail.com
-      #     server_port: 465
-      #     username: ${{ secrets.GMAIL_USERNAME }}
-      #     password: ${{ secrets.GMAIL_APP_PASSWORD }}
-      #     subject: GitHub Pages Feed Update - ${{ job.status }}
-      #     body: |
-      #       The feed update workflow has completed.
-            
-      #       Status: ${{ job.status }}
-      #       Repository: ${{ github.repository }}
-      #       Run ID: ${{ github.run_id }}
-      #       URL: ${{ steps.deployment.outputs.page_url }}
-      #     to: ${{ secrets.GMAIL_RECIPIENT }}
-      #     from: GitHub Actions Bot
-
+      - name: Notify Discord on Failure
+        if: failure()
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          if [ -n "$DISCORD_WEBHOOK" ]; then
+            curl -H "Content-Type: application/json" \
+                 -d "{\"content\": \"⚠️ **rssTea Feed Update Failed!**\nAn error occurred during the automated feed parsing or deployment process.\n\n**Repository:** ${{ github.repository }}\n**Run Details:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"}" \
+                 "$DISCORD_WEBHOOK"
+          fi
