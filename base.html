@@ -1,99 +1,464 @@
-<!DOCTYPE html><html><head>
-    <title>AYT04 - RSS Reader</title>
-    <meta name="description" content="rssTea is a fast, lightweight RSS and podcast Web Viewer that can be hosted On Github Pages."/>
-    <link rel="shortcut icon" href="favicon.ico"> 
-  <link rel="icon" href="favicon.png">
-<link rel="manifest" href="manifest.json" />
- <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="rdx" />
-    <meta   name="apple-mobile-web-app-status-bar-style" content="default" />
-     <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AYT04 - YouTube Subscriptions</title>
+    <meta name="description" content="rssTea is a premium YouTube Subscriptions & audio web viewer formatted to mimic the official mobile app experience."/>
+    
+    <!-- Shortcut Favicons -->
+    <link rel="shortcut icon" href="favicon.ico"> 
+    <link rel="icon" href="favicon.png">
+    <link rel="manifest" href="manifest.json" />
+    
+    <!-- iOS App Integration Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="YouTube" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Official YouTube Fonts & Material Symbols Styling -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+    
     <link rel="stylesheet" href="theme.css" type="text/css">
 </head>
 <body>
-<div id="header">AYT04</div>
+
+    <!-- Premium Mobile Top Navigation Bar -->
+    <div id="yt-mobile-header">
+        <div class="header-left">
+            <span class="yt-logo-icon">play_circle</span>
+            <span class="yt-logo-text">rssTea</span>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn"><span class="material-symbols-outlined">cast</span></button>
+            <button class="header-action-btn badge-btn">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="badge-dot"></span>
+            </button>
+            <button class="header-action-btn" id="search-trigger"><span class="material-symbols-outlined">search</span></button>
+            <div class="profile-avatar-circle">A</div>
+        </div>
+    </div>
+
+    <!-- Main Container Grid -->
     <div id="pcwrap">
-<div id="filter"><div class="pclogo">AYT04: RSS Reader</div><span id="filters">
-<select name="changechannel"><!-- options here --></select></span></div>
-<div id="wrap">
-<!-- posts here -->
-
-<script>
-    // I'll plan on studying this later,
-    // not that i don't wanna risk breaking
-    // this, i just want to take some time to adjust and learn
-    // some JS/PHP. I think most of this could be removed as,
-    // I am stripping out audio and podcasting for, since my
-    //feeds aren't podcasts, or more traditionally on youtube,
-    //odysee & PeerTube.
-    // UPDATE:
-    // I think, i hope this works..
-const tabs = document.querySelectorAll('.tab');
-const posts = document.querySelectorAll('.post');
-const select = document.querySelector('select[name="changechannel"]');
-let selectedChannel = 'All';
-
-select.addEventListener('change', () =>
-{
-    selectedChannel = select.value;
-    posts.forEach(post =>
-    {
-        const channel = post.getAttribute('data-channel');
-        if (selectedChannel === 'All' || channel === selectedChannel)
-        {
-            post.style.display = 'block';
-        }
-        else
-        {
-            post.style.display = 'none';
-        }
-    });
-    tabs.forEach(tab =>
-    {
-        tab.classList.remove('active');
-        select.classList.add('selected');
-    });
-
-});
-
-
-const deviceWidth = screen.width;
-const deviceHeight = screen.height;
-const pixelRatio = window.devicePixelRatio || 1;
-
-const canvas = document.createElement('canvas');
-const ctx = canvas.getContext('2d');
-
-canvas.width = deviceWidth * pixelRatio;
-canvas.height = deviceHeight * pixelRatio;
-
-ctx.fillStyle = 'white';
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)
-{
-    ctx.fillStyle = 'black';
-
-}
-
-ctx.fillRect(0, 0, canvas.width, canvas.height);
-const iconImage = new Image();
-iconImage.src = 'apple-touch-icon.png';
-
-iconImage.onload = function ()
-{
-    const x = (canvas.width - iconImage.width) / 2;
-    const y = (canvas.height - iconImage.height) / 2;
-
-    ctx.drawImage(iconImage, x, y);
-
-    const imageDataURL = canvas.toDataURL('image/png');
-
-    const appleTouchStartupImageLink = document.createElement('link');
-    appleTouchStartupImageLink.setAttribute('rel', 'apple-touch-startup-image');
-    appleTouchStartupImageLink.setAttribute('href', imageDataURL);
-    document.head.appendChild(appleTouchStartupImageLink);
-};
         
-</script>
+        <!-- Channels & Subscriptions Horizontal Sliding Panel -->
+        <div id="filter">
+            <div class="pclogo">
+                <span class="logo-red-dot"></span> Subscriptions
+            </div>
+            
+            <!-- Hide the legacy dropdown selection but preserve its logic for DOM updates -->
+            <select name="changechannel" style="display:none;">
+                <!-- options here -->
+            </select>
+            
+            <!-- Beautiful dynamic circular channel list container -->
+            <div id="filters-bar">
+                <!-- Javascript will dynamically build YouTube channel circles here -->
+            </div>
+            
+            <!-- YouTube Sub-Bar Category Filter Chips -->
+            <div id="category-chips-row">
+                <span class="tab active">All</span>
+                <span class="tab">Videos</span>
+                <span class="tab">Podcasts</span>
+                <span class="tab">Saved</span>
+            </div>
+        </div>
+
+        <!-- Video Subscription Feed Stack -->
+        <div id="wrap">
+            <!-- posts here -->
+        </div>
+
+    </div>
+
+    <!-- YouTube Premium Backdrop-blurred Floating Mini Player -->
+    <div id="floating_player">
+        <!-- Thin red line timeline bar indicating play state -->
+        <div id="mini-progress-track">
+            <div id="mini-progress-fill" style="width: 0%;"></div>
+        </div>
+        
+        <div class="player_meta">
+            <div class="player-left">
+                <!-- Thumbnail of current track inside player -->
+                <div id="player-thumb-container">
+                    <img id="player-current-thumb" src="favicon.png" alt="" />
+                    <span class="material-symbols-outlined music-note-icon">music_note</span>
+                </div>
+                <div class="player-text-info">
+                    <span id="title">Not Playing</span>
+                    <span id="player-subtitle">Select a podcast to begin</span>
+                </div>
+            </div>
+            
+            <div class="player-controls">
+                <button id="speed" title="Playback Speed">1x</button>
+                <button id="plus30" title="Skip Forward 30 Seconds">+30s</button>
+                <button id="playpausebutton" title="Play/Pause">Play</button>
+            </div>
+        </div>
+
+        <div id="timeline_wrap" style="display: none;">
+            <span id="current_time">00:00</span>
+            <span id="timeline">
+                <input type="range" id="seekbar" min="0" max="100" step="0.1" value="0">
+            </span>
+            <span id="duration">00:00</span>
+        </div>
+    </div>
+
+    <!-- Authentic Fixed YouTube Mobile Bottom Navigation Bar -->
+    <div id="yt-bottom-navigation">
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">home</span>
+            <span class="nav-label">Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">bolt</span>
+            <span class="nav-label">Shorts</span>
+        </a>
+        <a href="#" class="nav-item create-btn">
+            <span class="material-symbols-outlined">add_circle</span>
+        </a>
+        <a href="#" class="nav-item active">
+            <span class="material-symbols-outlined icon-fill">subscriptions</span>
+            <span class="nav-label">Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">video_library</span>
+            <span class="nav-label">You</span>
+        </a>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab');
+        const posts = document.querySelectorAll('.post');
+        const select = document.querySelector('select[name="changechannel"]');
+        let selectedChannel = 'All';
+
+        // Legacy Select compatibility listener
+        if (select) {
+            select.addEventListener('change', () => {
+                selectedChannel = select.value;
+                posts.forEach(post => {
+                    const channel = post.getAttribute('data-channel');
+                    if (selectedChannel === 'All' || channel === selectedChannel) {
+                        post.style.display = 'flex';
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Dynamically build Horizontal Channel Filter circles row mimicking Subscriptions tab
+        function buildDynamicChannels() {
+            const filtersBar = document.getElementById('filters-bar');
+            if (!filtersBar || !select) return;
+
+            const channelsRow = document.createElement('div');
+            channelsRow.className = 'yt-channel-row';
+
+            // Loop through select options generated by PHP
+            const options = Array.from(select.options);
+            options.forEach((opt, idx) => {
+                const val = opt.value;
+                const isAll = val === 'All';
+
+                const item = document.createElement('div');
+                item.className = `yt-channel-item ${isAll ? 'active' : ''}`;
+                item.setAttribute('data-value', val);
+
+                // Find a matching post thumbnail to use as channel avatar fallback
+                let avatarHtml = '';
+                if (isAll) {
+                    avatarHtml = `<span class="material-symbols-outlined yt-all-icon">compass_calibration</span>`;
+                } else {
+                    const matchedPost = document.querySelector(`.post[data-channel="${val}"]`);
+                    const postImg = matchedPost ? matchedPost.querySelector('.yt-channel-avatar')?.src : '';
+                    if (postImg) {
+                        avatarHtml = `<img src="${postImg}" alt="${val}" />`;
+                    } else {
+                        const letter = val.charAt(0).toUpperCase();
+                        avatarHtml = `<div class="yt-avatar-fallback">${letter}</div>`;
+                    }
+                }
+
+                // Simulate high-fidelity notification dots on subscriptions
+                const hasUpdates = !isAll && (idx % 2 === 0);
+                const updateDot = hasUpdates ? `<span class="yt-channel-dot"></span>` : '';
+
+                item.innerHTML = `
+                    <div class="yt-channel-circle">
+                        ${avatarHtml}
+                        ${updateDot}
+                    </div>
+                    <span class="yt-channel-label">${isAll ? 'All' : opt.text}</span>
+                `;
+
+                // Channel Circle tap/click handler
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.yt-channel-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
+
+                    // Filter posts via select component
+                    select.value = val;
+                    select.dispatchEvent(new Event('change'));
+
+                    // Reset Category chips to all
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabs[0].classList.add('active');
+
+                    // Scroll category chip bar cleanly
+                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                });
+
+                channelsRow.appendChild(item);
+            });
+
+            filtersBar.innerHTML = '';
+            filtersBar.appendChild(channelsRow);
+        }
+
+        buildDynamicChannels();
+
+        // Sub-Bar Category tabs filter logic (All, Videos, Podcasts)
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const filterText = tab.textContent.trim();
+                posts.forEach(post => {
+                    const isAudio = parseInt(post.getAttribute('data-audio')) === 1;
+                    const channel = post.getAttribute('data-channel');
+
+                    // Ensure we respect current channel selection in select too
+                    const currentCh = select ? select.value : 'All';
+                    const matchesCh = (currentCh === 'All' || channel === currentCh);
+
+                    if (matchesCh) {
+                        if (filterText === 'All') {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Videos' && !isAudio) {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Podcasts' && isAudio) {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Saved') {
+                            // Mock saved items (simulate features)
+                            post.style.display = (post.getAttribute('data-ts') % 2 === 0) ? 'flex' : 'none';
+                        } else {
+                            post.style.display = 'none';
+                        }
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // iOS Startup Splash Image creation dynamically using PWA variables
+        const deviceWidth = screen.width;
+        const deviceHeight = screen.height;
+        const pixelRatio = window.devicePixelRatio || 1;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = deviceWidth * pixelRatio;
+        canvas.height = deviceHeight * pixelRatio;
+
+        ctx.fillStyle = '#0f0f0f'; // Dark obsidian theme default
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const iconImage = new Image();
+        iconImage.src = 'apple-touch-icon.png';
+        iconImage.onload = function () {
+            const size = 120 * pixelRatio;
+            const x = (canvas.width - size) / 2;
+            const y = (canvas.height - size) / 2;
+            ctx.drawImage(iconImage, x, y, size, size);
+
+            const imageDataURL = canvas.toDataURL('image/png');
+            const appleTouchStartupImageLink = document.createElement('link');
+            appleTouchStartupImageLink.setAttribute('rel', 'apple-touch-startup-image');
+            appleTouchStartupImageLink.setAttribute('href', imageDataURL);
+            document.head.appendChild(appleTouchStartupImageLink);
+        };
+    });
+    </script>
+
+    <!-- Mini Player Logic Integrations -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btns = document.querySelectorAll('.yt-play-pill[data-aid]');
+        let caudio = null;
+        let activePlayBtn = null;
+        
+        const fpBtn = document.querySelector('#floating_player #playpausebutton');
+        const miniProgressFill = document.getElementById('mini-progress-fill');
+        const currentThumb = document.getElementById('player-current-thumb');
+        const playerSub = document.getElementById('player-subtitle');
+        const seekbar = document.getElementById('seekbar');
+
+        fpBtn.addEventListener('click', function() {
+            togglePP();
+        });
+
+        function togglePP() {
+            if (caudio) {
+                if (caudio.paused) {
+                    caudio.play();
+                } else {
+                    caudio.pause();
+                }
+            }
+        }
+
+        seekbar.addEventListener('input', function() {
+            if (caudio) {
+                const seekTime = (seekbar.value / 100) * caudio.duration;
+                caudio.currentTime = seekTime;
+            }
+        });
+
+        const speeds = [1, 1.25, 1.5, 1.75, 2];
+        let currentSpeedIndex = 0;
+        document.getElementById('speed').addEventListener('click', () => {
+            if (!caudio) return;
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+            const speed = speeds[currentSpeedIndex];
+            caudio.playbackRate = speed;
+            document.getElementById('speed').innerText = speed + 'x';
+        });
+
+        document.getElementById('plus30').addEventListener('click', () => {
+            if (caudio) {
+                caudio.currentTime += 30;
+            }
+        });
+
+        function updateAudioTime() {
+            if (!caudio) return;
+            const currentTime = caudio.currentTime;
+            const duration = caudio.duration || 1;
+            const progress = (currentTime / duration) * 100;
+            
+            // Sync Seekbars
+            seekbar.value = progress;
+            miniProgressFill.style.width = progress + '%';
+
+            // Sync Timeline numbers
+            document.getElementById('current_time').textContent = formatTime(currentTime);
+            document.getElementById('duration').textContent = formatTime(duration);
+        }
+
+        function playTime() {
+            fpBtn.classList.add('playing');
+            if (activePlayBtn) activePlayBtn.classList.add('playing');
+        }
+
+        function pauseTime() {
+            fpBtn.classList.remove('playing');
+            if (activePlayBtn) activePlayBtn.classList.remove('playing');
+        }
+
+        function formatTime(time) {
+            if (isNaN(time)) return '00:00';
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
+        }
+
+        // Attach podcast pill event listeners
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const aid = this.getAttribute('data-aid');
+                const audioElem = document.querySelector('audio[aid="' + aid + '"]');
+                changePlayback(audioElem, this);
+            });
+        });
+
+        function changePlayback(audioElem, clickTarget) {
+            const prevPlayBtn = activePlayBtn;
+            activePlayBtn = clickTarget;
+            
+            if (caudio && caudio !== audioElem) {
+                caudio.removeEventListener('timeupdate', updateAudioTime);
+                caudio.removeEventListener('play', playTime);
+                caudio.removeEventListener('pause', pauseTime);
+                caudio.pause();
+                
+                if (prevPlayBtn) prevPlayBtn.classList.remove('playing');
+                fpBtn.classList.remove('playing');
+                miniProgressFill.style.width = '0%';
+            }
+
+            caudio = audioElem;
+            caudio.addEventListener('timeupdate', updateAudioTime);
+            caudio.addEventListener('play', playTime);
+            caudio.addEventListener('pause', pauseTime);
+
+            if (caudio.paused) {
+                startPlayback();
+            } else {
+                caudio.pause();
+            }
+        }
+
+        function startPlayback() {
+            const fp = document.querySelector('#floating_player');
+            const closestPost = caudio.closest('.post');
+            
+            document.querySelectorAll('.post.nowplaying').forEach(e => e.classList.remove('nowplaying'));
+            closestPost.classList.add('nowplaying');
+
+            const titleText = closestPost.querySelector('.yt-title').textContent;
+            const channelText = closestPost.querySelector('.yt-channel-name').textContent;
+            const thumbImgSrc = closestPost.querySelector('.yt-thumbnail')?.src || 'favicon.png';
+
+            document.getElementById('title').textContent = titleText;
+            playerSub.textContent = channelText;
+            currentThumb.src = thumbImgSrc;
+            currentThumb.style.display = 'block';
+
+            fp.classList.add("show");
+            caudio.play();
+
+            document.getElementById('speed').innerText = caudio.playbackRate + 'x';
+            
+            // Sync with Native Device lock-screens & notifications via MediaSession API
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: titleText,
+                    artist: channelText,
+                    album: "rssTea Podcast",
+                    artwork: [{ src: thumbImgSrc }]
+                });
+
+                const totalAids = document.querySelectorAll('[data-aid]').length;
+                let nextAid = Math.floor(caudio.getAttribute('aid')) + 1;
+                let prevAid = Math.floor(caudio.getAttribute('aid')) - 1;
+                if (nextAid > totalAids - 1) { nextAid = 0; }
+                if (prevAid < 0) { prevAid = totalAids - 1; }
+
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    const nextBtn = document.querySelector(`.yt-play-pill[data-aid="${nextAid}"]`);
+                    if (nextBtn) nextBtn.click();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    const prevBtn = document.querySelector(`.yt-play-pill[data-aid="${prevAid}"]`);
+                    if (prevBtn) prevBtn.click();
+                });
+            }
+        }
+    });
+    </script>
 </body>
 </html>
