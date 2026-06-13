@@ -4,3 +4,5 @@ https://odysee.com/$/rss/@SomeOrdinaryGamers:6
 https://techlore.tv/feeds/videos.xml?videoChannelId=4
 
 https://gitlab.archlinux.org/archlinux/aurweb/-/issues?format=atom
+
+https://www.ohthatremindsme.com/feed.xml
