@@ -123,7 +123,7 @@ foreach ($chunkedItems as $chunk) {
                 ]
             ],
             'footer' => [
-                'text' => 'rssTea RSS Feed Reader',
+                'text' => 'AYT04',
                 'icon_url' => $faviconUrl
             ],
             'timestamp' => $isoTimestamp
