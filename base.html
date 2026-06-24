@@ -1,641 +1,464 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>rssTea - Live TV Guide</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>AYT04 - YouTube Subscriptions</title>
+    <meta name="description" content="rssTea is a premium YouTube Subscriptions & audio web viewer formatted to mimic the official mobile app experience."/>
     
-    <!-- Google Fonts & Material Symbols -->
+    <!-- Shortcut Favicons -->
+    <link rel="shortcut icon" href="favicon.ico"> 
+    <link rel="icon" href="favicon.png">
+    <link rel="manifest" href="manifest.json" />
+    
+    <!-- iOS App Integration Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="YouTube" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    
+    <!-- Official YouTube Fonts & Material Symbols Styling -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
     
-    <style>
-        :root {
-            --sidebar-w: 80px;
-            --channel-w: 260px;
-            --program-w: 320px;
-            --gap: 8px;
-            
-            /* Theme Colors from Reference Image */
-            --bg-main: #0b0c10;
-            --bg-surface: #191b22;
-            --bg-surface-alt: #22252e;
-            --text-main: #ffffff;
-            --text-muted: #8ba0b2;
-            --focus-ring: #ffffff;
-            --accent: #29b6f6;
-            --red-line: #ff453a;
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none;
-        }
-
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-main);
-            font-family: 'Inter', sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: var(--sidebar-w);
-            height: 100vh;
-            background-color: var(--bg-main);
-            border-right: 1px solid rgba(255,255,255,0.05);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 24px 0;
-            z-index: 50;
-            flex-shrink: 0;
-        }
-
-        .brand-logo {
-            width: 32px;
-            height: 32px;
-            background-color: var(--accent);
-            border-radius: 50%;
-            margin-bottom: 40px;
-            box-shadow: 0 0 20px rgba(41, 182, 246, 0.4);
-        }
-
-        .nav-item {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-muted);
-            border-radius: 50%;
-            margin-bottom: 16px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .nav-item:hover, .nav-item.active {
-            color: var(--text-main);
-            background-color: rgba(255,255,255,0.1);
-        }
-
-        .nav-item.active {
-            background-color: rgba(255,255,255,0.15);
-        }
-
-        /* --- MAIN EPG AREA --- */
-        .epg-container {
-            flex: 1;
-            height: 100vh;
-            overflow: auto;
-            position: relative;
-            background-color: var(--bg-main);
-            padding-bottom: 40px;
-            /* Hide scrollbar for TV feel */
-            scrollbar-width: none; 
-        }
-        .epg-container::-webkit-scrollbar { display: none; }
-
-        .epg-grid {
-            display: flex;
-            flex-direction: column;
-            min-width: max-content;
-            padding-top: 10px;
-        }
-
-        /* --- TIME HEADER --- */
-        .time-header-row {
-            display: flex;
-            position: sticky;
-            top: 0;
-            z-index: 30;
-            background-color: var(--bg-main);
-            padding-bottom: 16px;
-            padding-top: 20px;
-        }
-
-        .header-spacer {
-            width: var(--channel-w);
-            min-width: var(--channel-w);
-            position: sticky;
-            left: 0;
-            background-color: var(--bg-main);
-            z-index: 40;
-        }
-
-        .time-slots {
-            display: flex;
-            gap: var(--gap);
-        }
-
-        .time-slot {
-            width: var(--program-w);
-            min-width: var(--program-w);
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            padding-left: 16px;
-        }
-
-        /* --- CHANNEL ROWS --- */
-        .epg-row {
-            display: flex;
-            margin-bottom: var(--gap);
-        }
-
-        .channel-cell {
-            width: var(--channel-w);
-            min-width: var(--channel-w);
-            height: 80px;
-            background-color: var(--bg-surface);
-            position: sticky;
-            left: 0;
-            z-index: 20;
-            display: flex;
-            align-items: center;
-            padding: 0 16px;
-            border-radius: 0 8px 8px 0;
-            border-right: 2px solid var(--bg-main);
-        }
-
-        .channel-star {
-            color: var(--accent);
-            font-size: 18px;
-            margin-right: 12px;
-        }
-
-        .channel-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background-color: #2a2a2a;
-            object-fit: cover;
-            margin-right: 12px;
-        }
-
-        .channel-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* --- PROGRAM BLOCKS --- */
-        .programs-track {
-            display: flex;
-            gap: var(--gap);
-            padding-left: var(--gap);
-            position: relative;
-        }
-
-        .program-block {
-            width: var(--program-w);
-            min-width: var(--program-w);
-            height: 80px;
-            background-color: var(--bg-surface);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            padding: 8px;
-            cursor: pointer;
-            border: 3px solid transparent;
-            transition: transform 0.1s, border-color 0.1s, background-color 0.2s;
-            outline: none; /* Removed default outline for custom border */
-        }
-
-        /* Focused / Hover state simulating TV Remote selection */
-        .program-block:hover, .program-block:focus {
-            border-color: var(--focus-ring);
-            background-color: var(--bg-surface-alt);
-            transform: scale(1.02);
-            z-index: 10;
-        }
-
-        .program-thumb {
-            width: 110px;
-            height: 100%;
-            border-radius: 4px;
-            object-fit: cover;
-            background-color: #2a2a2a;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .program-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            overflow: hidden;
-            height: 100%;
-        }
-
-        .program-title {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--text-main);
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            line-height: 1.3;
-        }
-
-        .program-meta {
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-top: 6px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .badge-new {
-            border: 1px solid var(--text-muted);
-            padding: 1px 4px;
-            border-radius: 3px;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-right: 6px;
-        }
-
-        /* --- RED TIMELINE INDICATOR --- */
-        .current-time-line {
-            position: absolute;
-            top: 60px; /* Below time header */
-            bottom: 0;
-            width: 2px;
-            background-color: var(--red-line);
-            left: calc(var(--channel-w) + var(--gap) + (var(--program-w) / 4)); /* Fixed visually for the mockup */
-            z-index: 25;
-            pointer-events: none;
-            box-shadow: 0 0 8px rgba(255, 69, 58, 0.6);
-        }
-
-        /* --- PLAYER MODAL --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.9);
-            z-index: 1000;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal-content {
-            width: 85%;
-            max-width: 1000px;
-            aspect-ratio: 16/9;
-            background-color: var(--bg-surface);
-            border-radius: 12px;
-            overflow: hidden;
-            position: relative;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .modal-header {
-            height: 48px;
-            background-color: var(--bg-surface-alt);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 16px;
-        }
-
-        .modal-title {
-            font-size: 14px;
-            font-weight: 600;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-main);
-            cursor: pointer;
-            display: flex;
-        }
-
-        .modal-close:hover {
-            color: var(--red-line);
-        }
-
-        .iframe-container {
-            flex: 1;
-            width: 100%;
-            background-color: #000;
-        }
-
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        .modal-footer {
-            padding: 12px;
-            text-align: center;
-            background-color: var(--bg-surface-alt);
-        }
-
-        .modal-footer a {
-            color: var(--accent);
-            text-decoration: none;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        
-        .modal-footer a:hover {
-            text-decoration: underline;
-        }
-
-    </style>
+    <link rel="stylesheet" href="theme.css" type="text/css">
 </head>
 <body>
 
-    <!-- Sidebar Navigation -->
-    <div class="sidebar">
-        <div class="brand-logo"></div>
-        <div class="nav-item"><span class="material-symbols-outlined">search</span></div>
-        <div class="nav-item"><span class="material-symbols-outlined">home</span></div>
-        <div class="nav-item active"><span class="material-symbols-outlined">tv_guide</span></div>
-        <div class="nav-item"><span class="material-symbols-outlined">video_library</span></div>
-        <div class="nav-item"><span class="material-symbols-outlined">emoji_events</span></div>
-        <div class="nav-item"><span class="material-symbols-outlined">smart_display</span></div>
-        <div class="nav-item"><span class="material-symbols-outlined">movie</span></div>
-    </div>
-
-    <!-- Main EPG Guide Area -->
-    <div class="epg-container" id="epgContainer">
-        <!-- Red Timeline -->
-        <div class="current-time-line"></div>
-
-        <div class="epg-grid" id="epgGrid">
-            <!-- Dynamically populated by JS -->
+    <!-- Premium Mobile Top Navigation Bar -->
+    <div id="yt-mobile-header">
+        <div class="header-left">
+            <span class="yt-logo-icon">play_circle</span>
+            <span class="yt-logo-text">rssTea</span>
+        </div>
+        <div class="header-right">
+            <button class="header-action-btn"><span class="material-symbols-outlined">cast</span></button>
+            <button class="header-action-btn badge-btn">
+                <span class="material-symbols-outlined">notifications</span>
+                <span class="badge-dot"></span>
+            </button>
+            <button class="header-action-btn" id="search-trigger"><span class="material-symbols-outlined">search</span></button>
+            <div class="profile-avatar-circle">A</div>
         </div>
     </div>
 
-    <!-- Player Modal Overlay -->
-    <div class="modal-overlay" id="playerModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span class="modal-title" id="modalTitle">Now Playing</span>
-                <button class="modal-close" id="closeModal"><span class="material-symbols-outlined">close</span></button>
+    <!-- Main Container Grid -->
+    <div id="pcwrap">
+        
+        <!-- Channels & Subscriptions Horizontal Sliding Panel -->
+        <div id="filter">
+            <div class="pclogo">
+                <span class="logo-red-dot"></span> Subscriptions
             </div>
-            <div class="iframe-container">
-                <iframe id="playerFrame" allowfullscreen></iframe>
+            
+            <!-- Hide the legacy dropdown selection but preserve its logic for DOM updates -->
+            <select name="changechannel" style="display:none;">
+                <!-- options here -->
+            </select>
+            
+            <!-- Beautiful dynamic circular channel list container -->
+            <div id="filters-bar">
+                <!-- Javascript will dynamically build YouTube channel circles here -->
             </div>
-            <div class="modal-footer">
-                <a id="externalLink" href="#" target="_blank">Video blocked by platform? Open directly in a new tab ↗</a>
+            
+            <!-- YouTube Sub-Bar Category Filter Chips -->
+            <div id="category-chips-row">
+                <span class="tab active">All</span>
+                <span class="tab">Videos</span>
+                <span class="tab">Podcasts</span>
+                <span class="tab">Saved</span>
             </div>
         </div>
+
+        <!-- Video Subscription Feed Stack -->
+        <div id="wrap">
+            <!-- posts here -->
+        </div>
+
+    </div>
+
+    <!-- YouTube Premium Backdrop-blurred Floating Mini Player -->
+    <div id="floating_player">
+        <!-- Thin red line timeline bar indicating play state -->
+        <div id="mini-progress-track">
+            <div id="mini-progress-fill" style="width: 0%;"></div>
+        </div>
+        
+        <div class="player_meta">
+            <div class="player-left">
+                <!-- Thumbnail of current track inside player -->
+                <div id="player-thumb-container">
+                    <img id="player-current-thumb" src="favicon.png" alt="" />
+                    <span class="material-symbols-outlined music-note-icon">music_note</span>
+                </div>
+                <div class="player-text-info">
+                    <span id="title">Not Playing</span>
+                    <span id="player-subtitle">Select a podcast to begin</span>
+                </div>
+            </div>
+            
+            <div class="player-controls">
+                <button id="speed" title="Playback Speed">1x</button>
+                <button id="plus30" title="Skip Forward 30 Seconds">+30s</button>
+                <button id="playpausebutton" title="Play/Pause">Play</button>
+            </div>
+        </div>
+
+        <div id="timeline_wrap" style="display: none;">
+            <span id="current_time">00:00</span>
+            <span id="timeline">
+                <input type="range" id="seekbar" min="0" max="100" step="0.1" value="0">
+            </span>
+            <span id="duration">00:00</span>
+        </div>
+    </div>
+
+    <!-- Authentic Fixed YouTube Mobile Bottom Navigation Bar -->
+    <div id="yt-bottom-navigation">
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">home</span>
+            <span class="nav-label">Home</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">bolt</span>
+            <span class="nav-label">Shorts</span>
+        </a>
+        <a href="#" class="nav-item create-btn">
+            <span class="material-symbols-outlined">add_circle</span>
+        </a>
+        <a href="#" class="nav-item active">
+            <span class="material-symbols-outlined icon-fill">subscriptions</span>
+            <span class="nav-label">Subscriptions</span>
+        </a>
+        <a href="#" class="nav-item">
+            <span class="material-symbols-outlined">video_library</span>
+            <span class="nav-label">You</span>
+        </a>
     </div>
 
     <script>
-        let channels = {};
-        let timeSlots = [];
-        let maxRows = 0;
-        let maxCols = 0;
-        let currentFocus = { row: 0, col: 0 };
+    document.addEventListener('DOMContentLoaded', function() {
+        const tabs = document.querySelectorAll('.tab');
+        const posts = document.querySelectorAll('.post');
+        const select = document.querySelector('select[name="changechannel"]');
+        let selectedChannel = 'All';
 
-        const modal = document.getElementById('playerModal');
-        const playerFrame = document.getElementById('playerFrame');
-        const externalLink = document.getElementById('externalLink');
-        const modalTitle = document.getElementById('modalTitle');
-        const closeModalBtn = document.getElementById('closeModal');
-        const grid = document.getElementById('epgGrid');
-
-        // Time Generator for Headers
-        function generateTimeSlots() {
-            const slots = ["Today", "Now Playing"];
-            let now = new Date();
-            now.setMinutes(now.getMinutes() >= 30 ? 60 : 30); // round to next half hour
-            
-            for(let i=0; i<4; i++) {
-                let timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase().replace(' ', '');
-                slots.push(timeString);
-                now.setMinutes(now.getMinutes() + 30);
-            }
-            return slots;
+        // Legacy Select compatibility listener
+        if (select) {
+            select.addEventListener('change', () => {
+                selectedChannel = select.value;
+                posts.forEach(post => {
+                    const channel = post.getAttribute('data-channel');
+                    if (selectedChannel === 'All' || channel === selectedChannel) {
+                        post.style.display = 'flex';
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
+            });
         }
 
-        async function initEPG() {
-            let feedData = [];
-            try {
-                // Fetch REAL data from your Github Pages deployment instead of mocked data
-                const response = await fetch('feed.json');
-                if (response.ok) {
-                    feedData = await response.json();
+        // Dynamically build Horizontal Channel Filter circles row mimicking Subscriptions tab
+        function buildDynamicChannels() {
+            const filtersBar = document.getElementById('filters-bar');
+            if (!filtersBar || !select) return;
+
+            const channelsRow = document.createElement('div');
+            channelsRow.className = 'yt-channel-row';
+
+            // Loop through select options generated by PHP
+            const options = Array.from(select.options);
+            options.forEach((opt, idx) => {
+                const val = opt.value;
+                const isAll = val === 'All';
+
+                const item = document.createElement('div');
+                item.className = `yt-channel-item ${isAll ? 'active' : ''}`;
+                item.setAttribute('data-value', val);
+
+                // Find a matching post thumbnail to use as channel avatar fallback
+                let avatarHtml = '';
+                if (isAll) {
+                    avatarHtml = `<span class="material-symbols-outlined yt-all-icon">compass_calibration</span>`;
                 } else {
-                    throw new Error("feed.json not found");
-                }
-            } catch (err) {
-                console.warn("Could not fetch feed.json, using fallback data.", err);
-                // Fallback just in case you run this locally without a server
-                feedData = [
-                    {"link":"https://odysee.com/so-the-nsa-got-hacked...:521f68d841d502afa2425940c34e9313ac2f7d25","title":"So The NSA Got Hacked...","ch":"SomeOrdinaryGamers","date":1782259738,"image":"https://thumbnails.lbry.com/rLptRvyq06A"},
-                    {"link":"https://odysee.com/stack-overflow-is-having-an-existential:9135c3d5ee291b353f6224a56b61edb5de626166","title":"Stack Overflow Is Having An Existential Crisis","ch":"Brodie Robertson","date":1782235809,"image":"https://thumbnails.lbry.com/wPXqhfgTV9M"},
-                    {"link":"https://www.youtube.com/watch?v=_KpMZfO_Se0","title":"Every Ad You See Is Actually Police Surveillance","ch":"Cyb3rMaddy","date":1781883026,"image":"https://i4.ytimg.com/vi/_KpMZfO_Se0/hqdefault.jpg"}
-                ];
-            }
-
-            // Process Data: Group by Channel
-            feedData.forEach(item => {
-                const chName = item.ch || 'Unknown Channel';
-                if (!channels[chName]) channels[chName] = [];
-                channels[chName].push(item);
-            });
-
-            timeSlots = generateTimeSlots();
-            
-            // 1. Build Time Header
-            let headerHtml = `
-                <div class="time-header-row">
-                    <div class="header-spacer"></div>
-                    <div class="time-slots">
-                        ${timeSlots.map(time => `<div class="time-slot">${time}</div>`).join('')}
-                    </div>
-                </div>
-            `;
-            grid.innerHTML += headerHtml;
-
-            // 2. Build Channel Rows
-            let rowIndex = 0;
-            for (const [channelName, programs] of Object.entries(channels)) {
-                let domain = 'youtube.com';
-                try {
-                    domain = new URL(programs[0].link).hostname;
-                } catch(e) {}
-                const logoUrl = `https://s2.googleusercontent.com/s2/favicons?domain=${domain}&sz=64`;
-
-                let programsHtml = programs.map((prog, pIndex) => {
-                    const badge = pIndex === 0 ? `<span class="badge-new">New</span>` : '';
-                    const safeTitle = (prog.title || "").replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    // Using index lookups instead of placing the URL directly in HTML limits quoting breaks!
-                    return `
-                        <div class="program-block" tabindex="0" data-row="${rowIndex}" data-col="${pIndex}" data-channel-id="${encodeURIComponent(channelName)}" data-prog-index="${pIndex}">
-                            <img src="${prog.image}" class="program-thumb" onerror="this.style.display='none'">
-                            <div class="program-info">
-                                <div class="program-title">${safeTitle}</div>
-                                <div class="program-meta">
-                                    ${badge}
-                                    <span>${new Date(prog.date * 1000).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-
-                // Append empty filler blocks for visual continuity
-                for(let i = programs.length; i < timeSlots.length; i++) {
-                    programsHtml += `
-                        <div class="program-block" tabindex="0" data-row="${rowIndex}" data-col="${i}">
-                            <div class="program-info">
-                                <div class="program-title" style="color: var(--text-muted)">Upcoming Broadcast</div>
-                            </div>
-                        </div>
-                    `;
+                    const matchedPost = document.querySelector(`.post[data-channel="${val}"]`);
+                    const postImg = matchedPost ? matchedPost.querySelector('.yt-channel-avatar')?.src : '';
+                    if (postImg) {
+                        avatarHtml = `<img src="${postImg}" alt="${val}" />`;
+                    } else {
+                        const letter = val.charAt(0).toUpperCase();
+                        avatarHtml = `<div class="yt-avatar-fallback">${letter}</div>`;
+                    }
                 }
 
-                const rowHtml = `
-                    <div class="epg-row">
-                        <div class="channel-cell">
-                            <span class="channel-star material-symbols-outlined">star</span>
-                            <img src="${logoUrl}" class="channel-logo">
-                            <span class="channel-name">${channelName}</span>
-                        </div>
-                        <div class="programs-track">
-                            ${programsHtml}
-                        </div>
+                // Simulate high-fidelity notification dots on subscriptions
+                const hasUpdates = !isAll && (idx % 2 === 0);
+                const updateDot = hasUpdates ? `<span class="yt-channel-dot"></span>` : '';
+
+                item.innerHTML = `
+                    <div class="yt-channel-circle">
+                        ${avatarHtml}
+                        ${updateDot}
                     </div>
+                    <span class="yt-channel-label">${isAll ? 'All' : opt.text}</span>
                 `;
-                grid.innerHTML += rowHtml;
-                rowIndex++;
-            }
 
-            maxRows = Object.keys(channels).length - 1;
-            maxCols = timeSlots.length - 1;
+                // Channel Circle tap/click handler
+                item.addEventListener('click', () => {
+                    document.querySelectorAll('.yt-channel-item').forEach(el => el.classList.remove('active'));
+                    item.classList.add('active');
 
-            // Click to focus & open support for mouse users
-            document.querySelectorAll('.program-block[data-channel-id]').forEach(block => {
-                block.addEventListener('mousedown', function() {
-                    currentFocus.row = parseInt(this.getAttribute('data-row'));
-                    currentFocus.col = parseInt(this.getAttribute('data-col'));
+                    // Filter posts via select component
+                    select.value = val;
+                    select.dispatchEvent(new Event('change'));
+
+                    // Reset Category chips to all
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tabs[0].classList.add('active');
+
+                    // Scroll category chip bar cleanly
+                    item.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 });
-                block.addEventListener('click', function() {
-                    openPlayerModal(this);
-                });
+
+                channelsRow.appendChild(item);
             });
 
-            // Initialize focus on load
-            setTimeout(() => updateFocus(false), 100);
+            filtersBar.innerHTML = '';
+            filtersBar.appendChild(channelsRow);
         }
 
-        // --- SMART TV KEYBOARD NAVIGATION LOGIC ---
-        function updateFocus(smooth = true) {
-            const block = document.querySelector(`.program-block[data-row="${currentFocus.row}"][data-col="${currentFocus.col}"]`);
-            if (block) {
-                block.focus();
-                block.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center', inline: 'center' });
-            }
-        }
+        buildDynamicChannels();
 
-        document.addEventListener('keydown', (e) => {
-            const key = e.key;
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(key)) {
-                if (modal.classList.contains('active')) return; // Ignore if modal open
-                e.preventDefault(); 
-                
-                if (key === 'ArrowUp' && currentFocus.row > 0) currentFocus.row--;
-                if (key === 'ArrowDown' && currentFocus.row < maxRows) currentFocus.row++;
-                if (key === 'ArrowLeft' && currentFocus.col > 0) currentFocus.col--;
-                if (key === 'ArrowRight' && currentFocus.col < maxCols) currentFocus.col++;
+        // Sub-Bar Category tabs filter logic (All, Videos, Podcasts)
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
 
-                updateFocus(true);
-            }
-            if (key === 'Enter') {
-                if (modal.classList.contains('active')) return;
-                const block = document.querySelector(`.program-block[data-row="${currentFocus.row}"][data-col="${currentFocus.col}"]`);
-                if(block && block.hasAttribute('data-channel-id')) {
-                    block.style.backgroundColor = 'var(--accent)';
-                    setTimeout(() => {
-                        block.style.backgroundColor = '';
-                        openPlayerModal(block);
-                    }, 200);
+                const filterText = tab.textContent.trim();
+                posts.forEach(post => {
+                    const isAudio = parseInt(post.getAttribute('data-audio')) === 1;
+                    const channel = post.getAttribute('data-channel');
+
+                    // Ensure we respect current channel selection in select too
+                    const currentCh = select ? select.value : 'All';
+                    const matchesCh = (currentCh === 'All' || channel === currentCh);
+
+                    if (matchesCh) {
+                        if (filterText === 'All') {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Videos' && !isAudio) {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Podcasts' && isAudio) {
+                            post.style.display = 'flex';
+                        } else if (filterText === 'Saved') {
+                            // Mock saved items (simulate features)
+                            post.style.display = (post.getAttribute('data-ts') % 2 === 0) ? 'flex' : 'none';
+                        } else {
+                            post.style.display = 'none';
+                        }
+                    } else {
+                        post.style.display = 'none';
+                    }
+                });
+            });
+        });
+
+        // iOS Startup Splash Image creation dynamically using PWA variables
+        const deviceWidth = screen.width;
+        const deviceHeight = screen.height;
+        const pixelRatio = window.devicePixelRatio || 1;
+
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = deviceWidth * pixelRatio;
+        canvas.height = deviceHeight * pixelRatio;
+
+        ctx.fillStyle = '#0f0f0f'; // Dark obsidian theme default
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const iconImage = new Image();
+        iconImage.src = 'apple-touch-icon.png';
+        iconImage.onload = function () {
+            const size = 120 * pixelRatio;
+            const x = (canvas.width - size) / 2;
+            const y = (canvas.height - size) / 2;
+            ctx.drawImage(iconImage, x, y, size, size);
+
+            const imageDataURL = canvas.toDataURL('image/png');
+            const appleTouchStartupImageLink = document.createElement('link');
+            appleTouchStartupImageLink.setAttribute('rel', 'apple-touch-startup-image');
+            appleTouchStartupImageLink.setAttribute('href', imageDataURL);
+            document.head.appendChild(appleTouchStartupImageLink);
+        };
+    });
+    </script>
+
+    <!-- Mini Player Logic Integrations -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btns = document.querySelectorAll('.yt-play-pill[data-aid]');
+        let caudio = null;
+        let activePlayBtn = null;
+        
+        const fpBtn = document.querySelector('#floating_player #playpausebutton');
+        const miniProgressFill = document.getElementById('mini-progress-fill');
+        const currentThumb = document.getElementById('player-current-thumb');
+        const playerSub = document.getElementById('player-subtitle');
+        const seekbar = document.getElementById('seekbar');
+
+        fpBtn.addEventListener('click', function() {
+            togglePP();
+        });
+
+        function togglePP() {
+            if (caudio) {
+                if (caudio.paused) {
+                    caudio.play();
+                } else {
+                    caudio.pause();
                 }
             }
-        });
-
-        // --- MODAL LOGIC ---
-        function openPlayerModal(blockElement) {
-            const chName = decodeURIComponent(blockElement.getAttribute('data-channel-id'));
-            const pIdx = parseInt(blockElement.getAttribute('data-prog-index'));
-            
-            if (!channels[chName] || !channels[chName][pIdx]) return;
-            
-            const prog = channels[chName][pIdx];
-            const link = prog.link;
-            const title = prog.title;
-            
-            if (!link) return;
-
-            // Convert standard links to embed links to prevent iframe blocking
-            let embedLink = link;
-            if (link.includes('youtube.com/watch?v=')) {
-                const urlParams = new URLSearchParams(link.split('?')[1]);
-                const videoId = urlParams.get('v');
-                if (videoId) embedLink = `https://www.youtube.com/embed/${videoId}`;
-            } else if (link.includes('youtu.be/')) {
-                const videoId = link.split('youtu.be/')[1].split('?')[0];
-                embedLink = `https://www.youtube.com/embed/${videoId}`;
-            } else if (link.includes('odysee.com/') && !link.includes('/$/embed/')) {
-                // Format Odysee links correctly for iframe embeds
-                embedLink = link.replace('odysee.com/', 'odysee.com/$/embed/');
-            }
-
-            modalTitle.textContent = title || "Now Playing";
-            playerFrame.src = embedLink;
-            externalLink.href = link;
-            modal.classList.add('active');
         }
 
-        closeModalBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-            playerFrame.src = ''; 
-            updateFocus(false);
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) {
-                modal.classList.remove('active');
-                playerFrame.src = '';
-                updateFocus(false); 
+        seekbar.addEventListener('input', function() {
+            if (caudio) {
+                const seekTime = (seekbar.value / 100) * caudio.duration;
+                caudio.currentTime = seekTime;
             }
         });
 
-        // Start App
-        initEPG();
+        const speeds = [1, 1.25, 1.5, 1.75, 2];
+        let currentSpeedIndex = 0;
+        document.getElementById('speed').addEventListener('click', () => {
+            if (!caudio) return;
+            currentSpeedIndex = (currentSpeedIndex + 1) % speeds.length;
+            const speed = speeds[currentSpeedIndex];
+            caudio.playbackRate = speed;
+            document.getElementById('speed').innerText = speed + 'x';
+        });
+
+        document.getElementById('plus30').addEventListener('click', () => {
+            if (caudio) {
+                caudio.currentTime += 30;
+            }
+        });
+
+        function updateAudioTime() {
+            if (!caudio) return;
+            const currentTime = caudio.currentTime;
+            const duration = caudio.duration || 1;
+            const progress = (currentTime / duration) * 100;
+            
+            // Sync Seekbars
+            seekbar.value = progress;
+            miniProgressFill.style.width = progress + '%';
+
+            // Sync Timeline numbers
+            document.getElementById('current_time').textContent = formatTime(currentTime);
+            document.getElementById('duration').textContent = formatTime(duration);
+        }
+
+        function playTime() {
+            fpBtn.classList.add('playing');
+            if (activePlayBtn) activePlayBtn.classList.add('playing');
+        }
+
+        function pauseTime() {
+            fpBtn.classList.remove('playing');
+            if (activePlayBtn) activePlayBtn.classList.remove('playing');
+        }
+
+        function formatTime(time) {
+            if (isNaN(time)) return '00:00';
+            const minutes = Math.floor(time / 60);
+            const seconds = Math.floor(time % 60);
+            return ('0' + minutes).slice(-2) + ':' + ('0' + seconds).slice(-2);
+        }
+
+        // Attach podcast pill event listeners
+        btns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const aid = this.getAttribute('data-aid');
+                const audioElem = document.querySelector('audio[aid="' + aid + '"]');
+                changePlayback(audioElem, this);
+            });
+        });
+
+        function changePlayback(audioElem, clickTarget) {
+            const prevPlayBtn = activePlayBtn;
+            activePlayBtn = clickTarget;
+            
+            if (caudio && caudio !== audioElem) {
+                caudio.removeEventListener('timeupdate', updateAudioTime);
+                caudio.removeEventListener('play', playTime);
+                caudio.removeEventListener('pause', pauseTime);
+                caudio.pause();
+                
+                if (prevPlayBtn) prevPlayBtn.classList.remove('playing');
+                fpBtn.classList.remove('playing');
+                miniProgressFill.style.width = '0%';
+            }
+
+            caudio = audioElem;
+            caudio.addEventListener('timeupdate', updateAudioTime);
+            caudio.addEventListener('play', playTime);
+            caudio.addEventListener('pause', pauseTime);
+
+            if (caudio.paused) {
+                startPlayback();
+            } else {
+                caudio.pause();
+            }
+        }
+
+        function startPlayback() {
+            const fp = document.querySelector('#floating_player');
+            const closestPost = caudio.closest('.post');
+            
+            document.querySelectorAll('.post.nowplaying').forEach(e => e.classList.remove('nowplaying'));
+            closestPost.classList.add('nowplaying');
+
+            const titleText = closestPost.querySelector('.yt-title').textContent;
+            const channelText = closestPost.querySelector('.yt-channel-name').textContent;
+            const thumbImgSrc = closestPost.querySelector('.yt-thumbnail')?.src || 'favicon.png';
+
+            document.getElementById('title').textContent = titleText;
+            playerSub.textContent = channelText;
+            currentThumb.src = thumbImgSrc;
+            currentThumb.style.display = 'block';
+
+            fp.classList.add("show");
+            caudio.play();
+
+            document.getElementById('speed').innerText = caudio.playbackRate + 'x';
+            
+            // Sync with Native Device lock-screens & notifications via MediaSession API
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: titleText,
+                    artist: channelText,
+                    album: "rssTea Podcast",
+                    artwork: [{ src: thumbImgSrc }]
+                });
+
+                const totalAids = document.querySelectorAll('[data-aid]').length;
+                let nextAid = Math.floor(caudio.getAttribute('aid')) + 1;
+                let prevAid = Math.floor(caudio.getAttribute('aid')) - 1;
+                if (nextAid > totalAids - 1) { nextAid = 0; }
+                if (prevAid < 0) { prevAid = totalAids - 1; }
+
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    const nextBtn = document.querySelector(`.yt-play-pill[data-aid="${nextAid}"]`);
+                    if (nextBtn) nextBtn.click();
+                });
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    const prevBtn = document.querySelector(`.yt-play-pill[data-aid="${prevAid}"]`);
+                    if (prevBtn) prevBtn.click();
+                });
+            }
+        }
+    });
     </script>
 </body>
 </html>
